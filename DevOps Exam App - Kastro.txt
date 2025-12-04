@@ -103,7 +103,7 @@ apt install docker-compose
 
 
 ************************************
-5. Installation of Trivy
+5. Installation of Trivy(for devsecops real time)
 ************************************
 vi trivy.sh ----> Paste the below commands ---->
 #!/bin/bash
@@ -116,7 +116,7 @@ sudo apt-get install trivy
 ----> esc ----> :wq ----> sudo chmod +x trivy.sh ----> ./trivy.sh ----> trivy --version
 
 ************************************
-6. Installation of Docker Scout
+6. Installation of Docker Scout(to scan docker image)
 ************************************
 Make sure to Login to DockerHub account in browser
 
@@ -125,7 +125,7 @@ Goto MobaXTerm Terminal ---> Login to DockerHub ---> docker login -u <DockerHubU
 Installation of Docker Scout ---> curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh -s -- -b /usr/local/bin ---> Give the permission to dockerScout to execute the file ---> sudo chmod 777 /var/run/docker.sock
 
 ************************************
-7. Installation of SonarQube
+7. Installation of SonarQube(quality analysis)
 ************************************
 docker run -d --name sonar -p 9000:9000 sonarqube:lts-community
 docker images
@@ -340,3 +340,4 @@ pipeline {
     }
 
 }
+
