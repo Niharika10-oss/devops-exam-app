@@ -213,14 +213,14 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "niharikakolarkar/devopsexamapp:latest"
-        SCANNER_HOME = tool 'sonar'
+        SCANNER_HOME = tool 'sonar-scanner'
+        // Ensure sonar-scanner tool is installed on the agent or path is correct
     }
 
     stages {
         stage('Git Checkout') {
             steps {
-                git url: git 'https://github.com/Niharika10-oss/devops-exam-app.git', 
-                    branch: 'master'
+                git url: 'https://github.com/Niharika10-oss/devops-exam-app.git', branch: 'master'
             }
         }
 
@@ -231,25 +231,28 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('sonar') {
-                    sh """
-                    ${SCANNER_HOME}/bin/sonar-scanner \
-                    -Dsonar.projectName=devops-exam-app \
-                    -Dsonar.projectKey=devops-exam-app \
-                    -Dsonar.sources=. \
-                    -Dsonar.language=py \
-                    -Dsonar.python.version=3 \
-                    -Dsonar.host.url=http://localhost:9000
-                    """
-                }
-            }
+    steps {
+        withSonarQubeEnv('sonar') {
+            // 🔑 MODIFY THESE LINES: Prepend the full path to sonar-scanner
+            sh """
+            # Changed from // to #: Called directly: 'sonar-scanner'
+            ${SCANNER_HOME}/bin/sonar-scanner \\
+            -Dsonar.projectName=devops-exam-app \\
+            -Dsonar.projectKey=devops-exam-app \\
+            -Dsonar.sources=. \\
+            -Dsonar.language=py \\
+            -Dsonar.python.version=3 \\
+            -Dsonar.host.url=http://localhost:9000
+            """
         }
+    }
+}
 
         stage('Verify Docker Compose') {
             steps {
                 sh '''
-                docker compose version || { echo "Docker Compose not available"; exit 1; }
+                # Changed 'docker compose' to 'docker-compose'
+                docker-compose version || { echo "Docker Compose not available"; exit 1; }
                 '''
             }
         }
@@ -260,7 +263,6 @@ pipeline {
                     script {
                         withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
                             sh "docker build -t ${DOCKER_IMAGE} ."
-                            // Push the image to Docker Hub if needed
                             sh "docker push ${DOCKER_IMAGE}"
                         }
                     }
@@ -268,7 +270,6 @@ pipeline {
             }
         }
 
-        // Added Docker Scout Image Analysis
         stage('Docker Scout Image Analysis') {
             steps {
                 script {
@@ -284,22 +285,18 @@ pipeline {
         stage('Deploy with Docker Compose') {
             steps {
                 sh '''
-                # Clean up any existing containers
-                docker compose down --remove-orphans || true
+                # Changed all 'docker compose' to 'docker-compose'
+                docker-compose down --remove-orphans || true
+                docker-compose up -d --build
                 
-                # Start services with build
-                docker compose up -d --build
-                
-                # Wait for MySQL to be ready
                 echo "Waiting for MySQL to be ready..."
                 timeout 120s bash -c '
-                while ! docker compose exec -T mysql mysqladmin ping -uroot -prootpass --silent;
-                do 
+                while ! docker-compose exec -T mysql mysqladmin ping -uroot -prootpass --silent;
+                do  
                     sleep 5;
-                    docker compose logs mysql --tail=5 || true;
+                    docker-compose logs mysql || true;
                 done'
                 
-                # Additional wait for full initialization
                 sleep 10
                 '''
             }
@@ -309,7 +306,8 @@ pipeline {
             steps {
                 sh '''
                 echo "=== Container Status ==="
-                docker compose ps -a
+                # Changed 'docker compose' to 'docker-compose'
+                docker-compose ps -a
                 echo "=== Testing Flask Endpoint ==="
                 curl -I http://localhost:5000 || true
                 '''
@@ -320,26 +318,30 @@ pipeline {
     post {
         success {
             echo '🚀 Deployment successful!'
-            sh 'docker compose ps'
+            // Changed 'docker compose' to 'docker-compose'
+            sh 'docker-compose ps' 
             archiveArtifacts artifacts: 'trivy-fs-report.html', allowEmptyArchive: true
         }
         failure {
             echo '❗ Pipeline failed. Check logs above.'
             sh '''
             echo "=== Error Investigation ==="
-            docker compose logs --tail=50 || true
+            # Changed 'docker compose' to 'docker-compose'
+            docker-compose logs || true 
             '''
         }
         always {
             sh '''
             echo "=== Final Logs ==="
-            docker compose logs --tail=20 || true
+            # Changed 'docker compose' to 'docker-compose'
+            docker-compose logs || true 
             '''
             archiveArtifacts artifacts: 'trivy-fs-report.html', allowEmptyArchive: true
         }
     }
-
 }
+
+
 
 
 
