@@ -212,8 +212,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "kastrov/devopsexamapp:latest"
-        SCANNER_HOME = tool 'sonar-scanner'
+        DOCKER_IMAGE = "niharikakolarkar/devopsexamapp:latest"
+        SCANNER_HOME = tool 'sonar'
     }
 
     stages {
@@ -340,5 +340,6 @@ pipeline {
     }
 
 }
+
 
 
